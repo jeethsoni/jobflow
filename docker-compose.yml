@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: jobflow-postgres
+    environment:
+      POSTGRES_DB: jobflow_db
+      POSTGRES_USER: jobflow_user
+      POSTGRES_PASSWORD: jobflow_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - jobflow_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  jobflow_postgres_data:
