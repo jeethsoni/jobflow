@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: jobflow_user
       POSTGRES_PASSWORD: jobflow_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - jobflow_postgres_data:/var/lib/postgresql/data
 
