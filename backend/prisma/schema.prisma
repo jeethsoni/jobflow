@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  DETECTED
+  APPLIED
+  INTERVIEWING
+  ASSESSMENT
+  OFFER
+  REJECTED
+  SAVED
+  ARCHIVED
+}
+
+enum ApplicationSource {
+  GMAIL_IMPORT
+  MANUAL
+}
+
+model User {
+  id           String   @id @default(uuid())
+  fullName     String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  gmailAccount GmailAccount?
+  applications JobApplication[]
+}
+
+model GmailAccount {
+  id           String    @id @default(uuid())
+  googleEmail  String
+  accessToken  String
+  refreshToken String
+  tokenExpiry  DateTime?
+  connectedAt  DateTime  @default(now())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model JobApplication {
+  id          String            @id @default(uuid())
+  companyName String
+  jobTitle    String?
+  location    String?
+  salaryRange String?
+  jobUrl      String?
+  status      ApplicationStatus @default(DETECTED)
+  source      ApplicationSource @default(GMAIL_IMPORT)
+  confidence  Float?
+  dateApplied DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  gmailMessageId  String?
+  emailSubject    String?
+  emailSender     String?
+  emailSnippet    String?
+  emailReceivedAt DateTime?
+
+  notes     ApplicationNote[]
+  reminders FollowUpReminder[]
+
+  @@unique([userId, gmailMessageId])
+}
+
+model ApplicationNote {
+  id        String   @id @default(uuid())
+  note      String
+  createdAt DateTime @default(now())
+
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model FollowUpReminder {
+  id           String   @id @default(uuid())
+  reminderDate DateTime
+  message      String?
+  completed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
